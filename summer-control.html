@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Summer Control</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -15,7 +16,7 @@
   --border:#E5E4DF;--border2:#D0CFC8;
   --radius:16px;--radius-sm:10px;
   --tab-h:64px;
-  font-family:'DM Sans',sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 @media(prefers-color-scheme:dark){
   :root{
@@ -34,7 +35,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
 /* TOPBAR */
 .topbar{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between}
 .topbar-title{font-size:13px;font-weight:500;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
-.city-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;font-family:inherit;font-size:14px;font-weight:500;color:var(--text);width:130px;outline:none;transition:.15s}
+.city-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px f;font-family:inherit;font-size:14px;font-weight:500;color:var(--text);width:130px;outline:none;transition:.15s; text-align: center;}
 .city-input:focus{border-color:var(--accent)}
 
 /* CARDS */
@@ -97,7 +98,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
 .tan-timers{margin:10px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .timer-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
 .timer-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.timer-display{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--text)}
+.timer-display{font-family:'Inter';font-size:28px;font-weight:500;color:var(--text)}
 .timer-btn{margin-top:10px;width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:none;font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:.15s}
 .timer-btn:hover{background:var(--surface2)}
 .timer-btn.running{color:var(--accent);border-color:var(--accent)}
@@ -291,12 +292,12 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
 
     <div class="tan-timers">
       <div class="timer-card">
-        <div class="timer-label">🔵 Fronte</div>
+        <div class="timer-label">Fronte</div>
         <div class="timer-display" id="timer-front">18:00</div>
         <button class="timer-btn" id="btn-front" onclick="toggleTimer('front')">Start</button>
       </div>
       <div class="timer-card">
-        <div class="timer-label">🟠 Retro</div>
+        <div class="timer-label">Retro</div>
         <div class="timer-display" id="timer-back">18:00</div>
         <button class="timer-btn" id="btn-back" onclick="toggleTimer('back')">Start</button>
       </div>
