@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Summer Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F7F6F2;--surface:#FFFFFF;--surface2:#F0EFE9;
+  --text:#1A1A18;--text2:#6B6A65;--text3:#A8A79F;
+  --accent:#E8611A;--accent-light:#FDF0E8;--accent2:#1D9E75;
+  --border:#E5E4DF;--border2:#D0CFC8;
+  --radius:16px;--radius-sm:10px;
+  --tab-h:64px;
+  font-family:'DM Sans',sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#111110;--surface:#1C1C1A;--surface2:#252522;
+    --text:#F0EFE9;--text2:#9B9A93;--text3:#5C5B56;
+    --accent:#F07A3A;--accent-light:#2A1A0E;--accent2:#1D9E75;
+    --border:#2A2A27;--border2:#3A3A36;
+  }
+}
+html,body{height:100%;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
+.app{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(var(--tab-h) + 12px)}
+.tab{display:none}
+.tab.active{display:block}
+
+/* TOPBAR */
+.topbar{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:13px;font-weight:500;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.city-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;font-family:inherit;font-size:14px;font-weight:500;color:var(--text);width:130px;outline:none;transition:.15s}
+.city-input:focus{border-color:var(--accent)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.card+.card{margin-top:12px}
+.section{padding:16px 20px}
+.section+.section{margin-top:0}
+
+/* WEATHER STRIP */
+.weather-strip{margin:16px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.witem-label{font-size:11px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em}
+.witem-val{font-size:16px;font-weight:600;color:var(--text)}
+
+/* OUTDOOR INDEX */
+.oi-wrap{margin:12px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 20px;text-align:center;position:relative;overflow:hidden}
+.oi-label{font-size:12px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.oi-number{font-size:88px;font-weight:300;line-height:1;color:var(--text);transition:color .4s}
+.oi-number.high{color:#1D9E75}
+.oi-number.mid{color:#E8A020}
+.oi-number.low{color:#D85A30}
+.oi-number.bad{color:var(--text3)}
+.oi-desc{margin-top:8px;font-size:15px;font-weight:500;color:var(--text2)}
+.oi-bar-wrap{margin-top:16px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.oi-bar{height:100%;border-radius:3px;transition:width .6s ease,background .4s}
+
+/* SPECIAL SCORES */
+.scores-grid{margin:12px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px}
+.score-card-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.score-card-val{font-size:26px;font-weight:500;color:var(--text)}
+.score-card-sub{font-size:12px;color:var(--text3);margin-top:2px}
+
+/* SUMMER WINDOW */
+.window-wrap{margin:12px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.window-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.best-time-badge{background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;letter-spacing:.03em}
+.window-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:8px 10px;border-radius:var(--radius-sm);transition:.15s}
+.window-row.best{background:var(--accent-light)}
+.window-slot{font-size:13px;font-weight:500;color:var(--text2);width:60px;flex-shrink:0}
+.window-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.window-bar{height:100%;border-radius:3px}
+.window-score{font-size:13px;font-weight:600;width:28px;text-align:right;color:var(--text)}
+.window-row.best .window-slot{color:var(--accent)}
+.window-row.best .window-score{color:var(--accent)}
+
+/* TABS */
+.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:flex;height:var(--tab-h);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;border:none;background:none;color:var(--text3);font-family:inherit;font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;transition:.15s;padding:0}
+.tab-btn.active{color:var(--accent)}
+.tab-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
+/* TANNING */
+.tan-hero{margin:12px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px 20px;text-align:center}
+.uv-ring{width:100px;height:100px;margin:0 auto 16px;position:relative}
+.uv-ring svg{width:100%;height:100%}
+.uv-ring-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.uv-ring-num{font-size:24px;font-weight:600;color:var(--text);line-height:1}
+.uv-ring-txt{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.tan-rec{font-size:14px;color:var(--text2);margin-top:4px}
+.tan-timers{margin:10px 20px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.timer-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.timer-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.timer-display{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:var(--text)}
+.timer-btn{margin-top:10px;width:100%;padding:8px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:none;font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:.15s}
+.timer-btn:hover{background:var(--surface2)}
+.timer-btn.running{color:var(--accent);border-color:var(--accent)}
+.protection-card{margin:10px 20px 0;background:var(--accent-light);border:1px solid transparent;border-radius:var(--radius);padding:16px 20px}
+.prot-label{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.prot-text{font-size:14px;color:var(--text2);line-height:1.5}
+
+/* SUNSET / CHILL */
+.sub-selector{margin:12px 20px 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.sub-btn{padding:10px 4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:.15s;text-align:center}
+.sub-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.sub-content{display:none}
+.sub-content.active{display:block}
+
+/* FITNESS */
+.muscle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 20px 0}
+.muscle-btn{padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;transition:.15s;text-align:left;display:flex;align-items:center;gap:8px}
+.muscle-btn.selected{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.muscle-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0}
+.time-selector{margin:12px 20px 0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.time-btn{padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;transition:.15s;text-align:center}
+.time-btn.selected{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.gen-btn{margin:14px 20px 0;width:calc(100% - 40px);padding:16px;background:var(--accent);border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:15px;font-weight:600;color:#fff;cursor:pointer;transition:.15s;letter-spacing:.02em}
+.gen-btn:hover{opacity:.9}
+.gen-btn:disabled{opacity:.4;cursor:default}
+.workout-card{margin:12px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.workout-header{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.exercise{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.exercise:last-child{border-bottom:none}
+.ex-num{font-size:12px;font-weight:600;color:var(--accent);width:20px;flex-shrink:0;margin-top:2px}
+.ex-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px}
+.ex-detail{font-size:12px;color:var(--text3)}
+.done-btn{width:100%;margin-top:14px;padding:12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:none;font-family:inherit;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:.15s}
+.done-btn:hover{background:var(--surface2)}
+
+/* LOG */
+.log-wrap{margin:12px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.log-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.log-day{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.log-day:last-child{border-bottom:none}
+.log-date{font-size:12px;color:var(--text3);width:60px;flex-shrink:0}
+.log-oi{font-size:13px;font-weight:600;color:var(--text);width:32px}
+.log-tags{display:flex;gap:4px;flex-wrap:wrap}
+.log-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+.log-tag.outdoor{background:#E1F5EE;color:#0F6E56}
+.log-tag.tan{background:#FDF0E8;color:#993C1D}
+.log-tag.workout{background:#E6F1FB;color:#185FA5}
+@media(prefers-color-scheme:dark){
+  .log-tag.outdoor{background:#085041;color:#9FE1CB}
+  .log-tag.tan{background:#2A1A0E;color:#F5C4B3}
+  .log-tag.workout{background:#042C53;color:#B5D4F4}
+}
+
+/* LOADING */
+.loading{text-align:center;padding:20px;color:var(--text3);font-size:13px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-3px;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.refresh-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;font-family:inherit;padding:4px 8px;border-radius:6px;transition:.15s}
+.refresh-btn:hover{color:var(--accent)}
+
+/* PAGE HEADER */
+.page-head{padding:20px 20px 4px;display:flex;align-items:baseline;justify-content:space-between}
+.page-head h2{font-size:22px;font-weight:600;color:var(--text)}
+.page-head-sub{font-size:13px;color:var(--text3)}
+
+/* SUNSET CARD */
+.sunset-big{text-align:center;padding:30px 20px}
+.sunset-time{font-size:60px;font-weight:300;color:var(--text);line-height:1}
+.sunset-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.sunset-countdown{margin-top:10px;font-size:16px;color:var(--accent);font-weight:500}
+
+/* CHILL / RUN */
+.score-detail{margin:12px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.sd-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.sd-num{font-size:52px;font-weight:300;color:var(--text);line-height:1.1}
+.sd-desc{font-size:13px;color:var(--text2);margin-top:8px;line-height:1.5}
+.factors{margin-top:14px;display:flex;flex-direction:column;gap:6px}
+.factor-row{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2)}
+.factor-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.factor-dot.pos{background:#1D9E75}
+.factor-dot.neg{background:#D85A30}
+.factor-dot.neu{background:var(--text3)}
+
+@media(min-width:480px){
+  body{border-left:1px solid var(--border);border-right:1px solid var(--border)}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ═══════════════ TAB: HOME ═══════════════ -->
+<div id="tab-home" class="tab active">
+  <div class="topbar">
+    <span class="topbar-title">Summer Control</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <input class="city-input" id="city-input" type="text" placeholder="Città..." value="Milano">
+      <button class="refresh-btn" id="refresh-btn" title="Aggiorna">↻</button>
+    </div>
+  </div>
+
+  <!-- Weather strip -->
+  <div class="weather-strip" id="weather-strip">
+    <div><div class="witem-label">Temp</div><div class="witem-val" id="w-temp">—</div></div>
+    <div><div class="witem-label">UV</div><div class="witem-val" id="w-uv">—</div></div>
+    <div><div class="witem-label">Alba</div><div class="witem-val" id="w-rise">—</div></div>
+    <div><div class="witem-label">Tramonto</div><div class="witem-val" id="w-set">—</div></div>
+  </div>
+
+  <!-- Outdoor Index -->
+  <div class="oi-wrap">
+    <div class="oi-label">Outdoor Index</div>
+    <div class="oi-number" id="oi-number">—</div>
+    <div class="oi-desc" id="oi-desc">Caricamento in corso...</div>
+    <div class="oi-bar-wrap"><div class="oi-bar" id="oi-bar" style="width:0%;background:var(--text3)"></div></div>
+  </div>
+
+  <!-- Special Scores -->
+  <div class="scores-grid">
+    <div class="score-card">
+      <div class="score-card-label">Chill</div>
+      <div class="score-card-val" id="s-chill">—</div>
+      <div class="score-card-sub" id="s-chill-sub">—</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-label">Tanning</div>
+      <div class="score-card-val" id="s-tan">—</div>
+      <div class="score-card-sub" id="s-tan-sub">—</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-label">Sunset</div>
+      <div class="score-card-val" id="s-sunset">—</div>
+      <div class="score-card-sub" id="s-sunset-sub">—</div>
+    </div>
+    <div class="score-card">
+      <div class="score-card-label">Training</div>
+      <div class="score-card-val" id="s-train">—</div>
+      <div class="score-card-sub" id="s-train-sub">—</div>
+    </div>
+  </div>
+
+  <!-- Summer Window -->
+  <div class="window-wrap">
+    <div class="window-title">
+      <span>Summer Window</span>
+      <span class="best-time-badge" id="best-badge">—</span>
+    </div>
+    <div id="window-rows"></div>
+  </div>
+
+  <!-- Data Log -->
+  <div class="log-wrap">
+    <div class="log-title">Storico</div>
+    <div id="log-entries"><div style="font-size:13px;color:var(--text3)">Nessun dato ancora.</div></div>
+  </div>
+
+  <div style="height:8px"></div>
+</div>
+
+<!-- ═══════════════ TAB: OUTDOOR ═══════════════ -->
+<div id="tab-outdoor" class="tab">
+  <div class="page-head">
+    <h2>Outdoor</h2>
+  </div>
+
+  <div class="sub-selector">
+    <button class="sub-btn active" data-sub="tanning">☀️ Tanning</button>
+    <button class="sub-btn" data-sub="sunset">🌅 Sunset</button>
+    <button class="sub-btn" data-sub="chill">😎 Chill</button>
+  </div>
+
+  <!-- TANNING -->
+  <div class="sub-content active" id="sub-tanning">
+    <div class="tan-hero">
+      <div class="uv-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="50" cy="50" r="42" fill="none" id="uv-arc"
+            stroke="#E8611A" stroke-width="8"
+            stroke-dasharray="0 264" stroke-dashoffset="-66"
+            stroke-linecap="round" style="transition:stroke-dasharray .5s"/>
+        </svg>
+        <div class="uv-ring-label">
+          <div class="uv-ring-num" id="tan-uv">—</div>
+          <div class="uv-ring-txt">UV</div>
+        </div>
+      </div>
+      <div class="tan-rec" id="tan-rec">Caricamento...</div>
+    </div>
+
+    <div class="tan-timers">
+      <div class="timer-card">
+        <div class="timer-label">🔵 Fronte</div>
+        <div class="timer-display" id="timer-front">18:00</div>
+        <button class="timer-btn" id="btn-front" onclick="toggleTimer('front')">Start</button>
+      </div>
+      <div class="timer-card">
+        <div class="timer-label">🟠 Retro</div>
+        <div class="timer-display" id="timer-back">18:00</div>
+        <button class="timer-btn" id="btn-back" onclick="toggleTimer('back')">Start</button>
+      </div>
+    </div>
+
+    <div class="protection-card" id="protection-card">
+      <div class="prot-label">Protezione</div>
+      <div class="prot-text" id="prot-text">Caricamento consiglio...</div>
+    </div>
+
+    <div style="margin:10px 20px;display:flex;gap:8px">
+      <button onclick="resetTimers()" style="flex:1;padding:12px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer">Reset timer</button>
+      <button onclick="logTanning()" style="flex:1;padding:12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer">Salva sessione</button>
+    </div>
+  </div>
+
+  <!-- SUNSET -->
+  <div class="sub-content" id="sub-sunset">
+    <div class="card" style="margin:12px 20px 0">
+      <div class="sunset-big">
+        <div class="sunset-label">Tramonto oggi</div>
+        <div class="sunset-time" id="sunset-display">—</div>
+        <div class="sunset-countdown" id="sunset-cd">—</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Sunset Score</div>
+          <div style="font-size:28px;font-weight:500;color:var(--text)" id="sunset-score">—</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Alba</div>
+          <div style="font-size:28px;font-weight:500;color:var(--text)" id="sunrise-display">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-detail">
+      <div class="sd-title">Qualità tramonto</div>
+      <div class="sd-desc" id="sunset-quality-desc">—</div>
+      <div class="factors" id="sunset-factors"></div>
+    </div>
+  </div>
+
+  <!-- CHILL -->
+  <div class="sub-content" id="sub-chill">
+    <div class="score-detail">
+      <div class="sd-title">Chill Score</div>
+      <div class="sd-num" id="chill-big">—</div>
+      <div class="sd-desc" id="chill-desc">—</div>
+      <div class="factors" id="chill-factors"></div>
+    </div>
+    <div class="score-detail" style="margin-top:12px">
+      <div class="sd-title">Running Score</div>
+      <div class="sd-num" id="run-big">—</div>
+      <div class="sd-desc" id="run-desc">—</div>
+      <div class="factors" id="run-factors"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB: FITNESS ═══════════════ -->
+<div id="tab-fitness" class="tab">
+  <div class="page-head">
+    <h2>Fitness</h2>
+    <span class="page-head-sub">Max 2 gruppi</span>
+  </div>
+
+  <div class="muscle-grid">
+    <button class="muscle-btn" data-muscle="Petto" onclick="toggleMuscle(this)">
+      <svg viewBox="0 0 24 24"><path d="M4 8c0-2 2-4 5-4s5 3 5 4M4 8v6a5 3 0 0010 0V8"/><circle cx="19" cy="8" r="2"/></svg>
+      Petto
+    </button>
+    <button class="muscle-btn" data-muscle="Schiena" onclick="toggleMuscle(this)">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>
+      Schiena
+    </button>
+    <button class="muscle-btn" data-muscle="Gambe" onclick="toggleMuscle(this)">
+      <svg viewBox="0 0 24 24"><path d="M8 3v10l2 4v4M16 3v10l-2 4v4"/></svg>
+      Gambe
+    </button>
+    <button class="muscle-btn" data-muscle="Spalle" onclick="toggleMuscle(this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+      Spalle
+    </button>
+    <button class="muscle-btn" data-muscle="Braccia" onclick="toggleMuscle(this)">
+      <svg viewBox="0 0 24 24"><path d="M6 9c0 3 2 5 6 5s6-2 6-5M12 14v6"/></svg>
+      Braccia
+    </button>
+    <button class="muscle-btn" data-muscle="Core" onclick="toggleMuscle(this)">
+      <svg viewBox="0 0 24 24"><rect x="5" y="9" width="14" height="6" rx="3"/><path d="M12 3v6M12 15v6"/></svg>
+      Core
+    </button>
+  </div>
+
+  <div class="time-selector">
+    <button class="time-btn" data-time="15" onclick="selectTime(this)">15 min</button>
+    <button class="time-btn" data-time="30" onclick="selectTime(this)">30 min</button>
+    <button class="time-btn selected" data-time="45" onclick="selectTime(this)">45 min</button>
+  </div>
+
+  <button class="gen-btn" id="gen-btn" onclick="generateWorkout()" disabled>Genera workout ↗</button>
+
+  <div id="workout-output"></div>
+
+  <div style="height:8px"></div>
+</div>
+
+</div><!-- /app -->
+
+<!-- TABS NAV -->
+<nav class="tabs">
+  <button class="tab-btn active" onclick="switchTab('home',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </button>
+  <button class="tab-btn" onclick="switchTab('outdoor',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    Outdoor
+  </button>
+  <button class="tab-btn" onclick="switchTab('fitness',this)">
+    <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+    Fitness
+  </button>
+</nav>
+
+<script>
+// ═══ STATE ═══
+const state = {
+  weather: null,
+  scores: null,
+  city: 'Milano',
+  lat: 45.4642, lon: 9.1900,
+  selectedMuscles: [],
+  selectedTime: 45,
+  timers: { front: { val: 0, running: false, interval: null }, back: { val: 0, running: false, interval: null } },
+  log: JSON.parse(localStorage.getItem('sc_log') || '[]'),
+  tanLogged: false,
+  workoutLogged: false,
+};
+
+// ═══ TAB SWITCH ═══
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ═══ SUB SELECTOR (Outdoor) ═══
+document.querySelectorAll('.sub-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sub-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('sub-' + btn.dataset.sub).classList.add('active');
+  });
+});
+
+// ═══ GEOCODE + WEATHER ═══
+async function geocode(city) {
+  const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=it`);
+  const d = await r.json();
+  if (!d.results || !d.results.length) throw new Error('Città non trovata');
+  return { lat: d.results[0].latitude, lon: d.results[0].longitude, name: d.results[0].name };
+}
+
+async function fetchWeather(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weathercode,windspeed_10m,uv_index&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,uv_index,weathercode&daily=sunrise,sunset,uv_index_max,precipitation_sum&timezone=auto&forecast_days=1`;
+  const r = await fetch(url);
+  return r.json();
+}
+
+function decodeWeatherCode(code) {
+  if (code === 0) return 'Sereno';
+  if (code <= 2) return 'Parzialmente nuvoloso';
+  if (code <= 3) return 'Nuvoloso';
+  if (code <= 45) return 'Nebbia';
+  if (code <= 55) return 'Pioviggine';
+  if (code <= 65) return 'Pioggia';
+  if (code <= 77) return 'Neve';
+  if (code <= 82) return 'Rovesci';
+  return 'Temporale';
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ═══ OUTDOOR INDEX FORMULA ═══
+function calcScores(w) {
+  const c = w.current;
+  const temp = c.temperature_2m;
+  const humidity = c.relative_humidity_2m;
+  const rain = c.precipitation;
+  const uv = c.uv_index;
+  const wind = c.windspeed_10m;
+  const code = c.weathercode;
+
+  // Outdoor Index
+  let oi = 50;
+  // Temp contribution (20–32°C ideal)
+  if (temp >= 20 && temp <= 32) oi += 20;
+  else if (temp >= 15 && temp < 20) oi += 10;
+  else if (temp > 32 && temp <= 36) oi += 5;
+  else if (temp < 15 || temp > 36) oi -= 15;
+  // Humidity penalty
+  if (humidity > 80) oi -= 15;
+  else if (humidity > 65) oi -= 7;
+  else if (humidity < 40) oi += 5;
+  // Rain penalty
+  if (rain > 2) oi -= 30;
+  else if (rain > 0) oi -= 15;
+  // UV bonus (2-7 good for outdoor)
+  if (uv >= 2 && uv <= 7) oi += 10;
+  else if (uv > 7) oi -= 5;
+  // Clear sky bonus
+  if (code === 0) oi += 15;
+  else if (code <= 2) oi += 8;
+  else if (code >= 80) oi -= 20;
+  // Wind penalty
+  if (wind > 30) oi -= 10;
+  else if (wind > 15) oi -= 5;
+  oi = Math.min(100, Math.max(0, Math.round(oi)));
+
+  // Chill Score (lower temp + low humidity + light wind = chill)
+  let chill = 50;
+  if (temp >= 18 && temp <= 25) chill += 25;
+  else if (temp >= 14 && temp < 18) chill += 15;
+  else if (temp > 25 && temp <= 28) chill += 10;
+  else if (temp > 28) chill -= 20;
+  if (humidity < 55) chill += 15;
+  else if (humidity > 70) chill -= 15;
+  if (wind >= 5 && wind <= 20) chill += 10;
+  if (code === 0) chill += 10;
+  else if (code >= 80) chill -= 25;
+  chill = Math.min(100, Math.max(0, Math.round(chill)));
+
+  // Tanning Score
+  let tan = 0;
+  if (uv >= 3) tan = Math.min(100, Math.round(uv * 10));
+  if (code === 0) tan = Math.min(100, tan + 15);
+  else if (code <= 2) tan = Math.max(0, tan - 10);
+  else if (code >= 60) tan = 0;
+  tan = Math.min(100, Math.max(0, Math.round(tan)));
+
+  // Sunset Score
+  const now = new Date();
+  const sunset = new Date(w.daily.sunset[0]);
+  const diffH = (sunset - now) / 3600000;
+  let sunsetScore = 50;
+  if (code === 0) sunsetScore += 30;
+  else if (code <= 2) sunsetScore += 15;
+  if (diffH > 0 && diffH < 3) sunsetScore += 20;
+  if (humidity > 40 && humidity < 70) sunsetScore += 10; // slight haze = colors
+  sunsetScore = Math.min(100, Math.max(0, Math.round(sunsetScore)));
+
+  // Training Score
+  let train = 50;
+  if (temp >= 15 && temp <= 25) train += 25;
+  else if (temp >= 10 && temp < 15) train += 10;
+  else if (temp > 25 && temp <= 30) train += 5;
+  else if (temp > 32) train -= 20;
+  if (humidity < 60) train += 15;
+  else if (humidity > 75) train -= 15;
+  if (rain > 0.5) train -= 20;
+  if (uv > 8) train -= 10;
+  train = Math.min(100, Math.max(0, Math.round(train)));
+
+  // Running Score
+  let run = 50;
+  if (temp >= 8 && temp <= 20) run += 30;
+  else if (temp >= 20 && temp <= 25) run += 15;
+  else if (temp > 28) run -= 25;
+  if (humidity < 60) run += 10;
+  if (wind < 15) run += 10;
+  if (rain > 0) run -= 20;
+  run = Math.min(100, Math.max(0, Math.round(run)));
+
+  return { oi, chill, tan, sunsetScore, train, run };
+}
+
+function hourlyWindows(w) {
+  const slots = [
+    { label: '6–8', h: 7 }, { label: '8–10', h: 9 }, { label: '10–12', h: 11 },
+    { label: '12–14', h: 13 }, { label: '14–16', h: 15 }, { label: '16–18', h: 17 },
+    { label: '18–20', h: 19 }, { label: '20–22', h: 21 },
+  ];
+  const todayStr = new Date().toISOString().split('T')[0];
+  return slots.map(slot => {
+    const idx = w.hourly.time.findIndex(t => t.startsWith(todayStr + 'T' + String(slot.h).padStart(2,'0')));
+    if (idx < 0) return { ...slot, score: 0 };
+    const temp = w.hourly.temperature_2m[idx];
+    const humidity = w.hourly.relative_humidity_2m[idx];
+    const rain_prob = w.hourly.precipitation_probability[idx];
+    const uv = w.hourly.uv_index[idx];
+    const code = w.hourly.weathercode[idx];
+    let s = 50;
+    if (temp >= 20 && temp <= 32) s += 18;
+    else if (temp >= 15 && temp < 20) s += 8;
+    else if (temp < 10 || temp > 36) s -= 15;
+    if (humidity > 80) s -= 12;
+    else if (humidity < 45) s += 5;
+    if (rain_prob > 60) s -= 25;
+    else if (rain_prob > 30) s -= 10;
+    if (uv >= 2 && uv <= 7) s += 8;
+    if (code === 0) s += 12;
+    else if (code <= 2) s += 5;
+    else if (code >= 80) s -= 20;
+    return { ...slot, score: Math.min(100, Math.max(0, Math.round(s))) };
+  });
+}
+
+function scoreColor(s) {
+  if (s >= 80) return '#1D9E75';
+  if (s >= 60) return '#E8A020';
+  if (s >= 40) return '#D85A30';
+  return '#888';
+}
+
+// ═══ RENDER HOME ═══
+function renderHome(w, scores, windows) {
+  // Weather
+  document.getElementById('w-temp').textContent = Math.round(w.current.temperature_2m) + '°';
+  document.getElementById('w-uv').textContent = Math.round(w.current.uv_index);
+  document.getElementById('w-rise').textContent = fmtTime(w.daily.sunrise[0]);
+  document.getElementById('w-set').textContent = fmtTime(w.daily.sunset[0]);
+
+  // OI
+  const oi = scores.oi;
+  const oiEl = document.getElementById('oi-number');
+  oiEl.textContent = oi;
+  oiEl.className = 'oi-number ' + (oi >= 80 ? 'high' : oi >= 60 ? 'mid' : oi >= 40 ? 'low' : 'bad');
+  const descs = ['Stai dentro', 'Così così', 'Buona giornata', 'Ottima giornata', 'Esci subito!'];
+  const di = oi >= 90 ? 4 : oi >= 75 ? 3 : oi >= 60 ? 2 : oi >= 40 ? 1 : 0;
+  document.getElementById('oi-desc').textContent = descs[di];
+  const bar = document.getElementById('oi-bar');
+  bar.style.width = oi + '%';
+  bar.style.background = scoreColor(oi);
+
+  // Special scores
+  const scoreConf = [
+    ['s-chill', scores.chill, 'chill-sub'],
+    ['s-tan', scores.tan, 'tan-sub'],
+    ['s-sunset', scores.sunsetScore, 'sunset-sub'],
+    ['s-train', scores.train, 'train-sub'],
+  ];
+  const sublabels = [
+    s => s >= 70 ? 'Fresco e piacevole' : s >= 50 ? 'Accettabile' : 'Non ideale',
+    s => s >= 70 ? 'UV ottimale' : s >= 40 ? 'Abbronzatura lenta' : 'UV troppo basso/alto',
+    s => s >= 70 ? 'Tramonto epico' : s >= 50 ? 'Da vedere' : 'Normale',
+    s => s >= 70 ? 'Condizioni top' : s >= 50 ? 'Va bene' : 'Considera palestra',
+  ];
+  scoreConf.forEach(([id, val, subid], i) => {
+    document.getElementById(id).textContent = val;
+    document.getElementById('s-' + subid.split('-')[1] + '-sub') && 
+      (document.getElementById('s-' + subid.split('-')[1] + '-sub').textContent = sublabels[i](val));
+  });
+  document.getElementById('s-chill-sub').textContent = sublabels[0](scores.chill);
+  document.getElementById('s-tan-sub').textContent = sublabels[1](scores.tan);
+  document.getElementById('s-sunset-sub').textContent = sublabels[2](scores.sunsetScore);
+  document.getElementById('s-train-sub').textContent = sublabels[3](scores.train);
+
+  // Windows
+  const best = windows.reduce((a,b) => b.score > a.score ? b : a, windows[0]);
+  document.getElementById('best-badge').textContent = best.label + ' — ' + best.score;
+  const wr = document.getElementById('window-rows');
+  wr.innerHTML = windows.map(win => `
+    <div class="window-row ${win.label === best.label ? 'best' : ''}">
+      <span class="window-slot">${win.label}</span>
+      <div class="window-bar-wrap">
+        <div class="window-bar" style="width:${win.score}%;background:${scoreColor(win.score)}"></div>
+      </div>
+      <span class="window-score">${win.score}</span>
+    </div>
+  `).join('');
+}
+
+// ═══ RENDER OUTDOOR ═══
+function renderOutdoor(w, scores) {
+  const uv = Math.round(w.current.uv_index);
+  document.getElementById('tan-uv').textContent = uv;
+  const circ = 2 * Math.PI * 42;
+  const pct = Math.min(uv / 12, 1);
+  document.getElementById('uv-arc').setAttribute('stroke-dasharray', (circ * pct) + ' ' + (circ * (1 - pct)));
+
+  const mins = uv <= 2 ? 60 : uv <= 4 ? 40 : uv <= 6 ? 25 : uv <= 8 ? 18 : 10;
+  const tanText = uv <= 1 ? 'UV molto basso, abbronzatura minima' : uv <= 3 ? 'UV basso, puoi stare fuori più a lungo' : uv <= 6 ? `UV moderato — circa ${mins} min per lato` : uv <= 8 ? `UV alto — max ${mins} min per lato` : `UV molto alto — max ${mins} min, protezione obbligatoria`;
+  document.getElementById('tan-rec').textContent = tanText;
+  document.getElementById('timer-front').textContent = mins + ':00';
+  document.getElementById('timer-back').textContent = mins + ':00';
+  state.timers.front.val = mins * 60;
+  state.timers.back.val = mins * 60;
+
+  const spf = uv <= 3 ? '15-20' : uv <= 6 ? '30' : uv <= 8 ? '50' : '50+';
+  document.getElementById('prot-text').textContent = `SPF ${spf} consigliato. UV ${uv <= 3 ? 'basso' : uv <= 6 ? 'moderato' : uv <= 8 ? 'alto' : 'molto alto'} — ${uv <= 3 ? 'protezione leggera, ok anche crema idratante con filtro' : uv <= 6 ? 'applica protezione 30 min prima, riapplica ogni 2h' : 'protezione alta obbligatoria, evita ore 11-15, cappello consigliato'}.`;
+
+  // Sunset
+  document.getElementById('sunset-display').textContent = fmtTime(w.daily.sunset[0]);
+  document.getElementById('sunrise-display').textContent = fmtTime(w.daily.sunrise[0]);
+  document.getElementById('sunset-score').textContent = scores.sunsetScore;
+  updateSunsetCountdown(w);
+  const qd = scores.sunsetScore >= 75 ? 'Tramonto spettacolare previsto — condizioni ottimali per fotografie e aperitivo all\'aperto.' : scores.sunsetScore >= 50 ? 'Tramonto nella media, vale la pena darci un occhio.' : 'Condizioni nuvolose potrebbero coprire il tramonto.';
+  document.getElementById('sunset-quality-desc').textContent = qd;
+  const sunFactors = document.getElementById('sunset-factors');
+  sunFactors.innerHTML = factorHTML([
+    { pos: w.current.weathercode === 0, label: w.current.weathercode === 0 ? 'Cielo sereno: colori vividi' : 'Cielo coperto: colori attenuati' },
+    { pos: w.current.relative_humidity_2m < 70, label: w.current.relative_humidity_2m < 70 ? 'Umidità ok' : 'Umidità alta: cielo meno nitido' },
+  ]);
+
+  // Chill
+  document.getElementById('chill-big').textContent = scores.chill;
+  document.getElementById('chill-desc').textContent = scores.chill >= 70 ? 'Temperatura piacevole, brezza leggera. Perfetto per stare all\'aperto.' : scores.chill >= 50 ? 'Condizioni accettabili, niente di eccezionale.' : 'Troppo caldo/umido/ventoso per stare in giro comodamente.';
+  document.getElementById('chill-factors').innerHTML = factorHTML([
+    { pos: w.current.temperature_2m >= 18 && w.current.temperature_2m <= 26, label: `Temperatura: ${Math.round(w.current.temperature_2m)}°` },
+    { pos: w.current.relative_humidity_2m < 65, label: `Umidità: ${Math.round(w.current.relative_humidity_2m)}%` },
+    { pos: w.current.windspeed_10m < 20, label: `Vento: ${Math.round(w.current.windspeed_10m)} km/h` },
+  ]);
+
+  document.getElementById('run-big').textContent = scores.run;
+  document.getElementById('run-desc').textContent = scores.run >= 70 ? 'Condizioni ideali per correre. Temperatura e umidità nella norma.' : scores.run >= 50 ? 'Uscita possibile, ma non ottimale.' : 'Meglio rimandare o correre in palestra.';
+  document.getElementById('run-factors').innerHTML = factorHTML([
+    { pos: w.current.temperature_2m >= 8 && w.current.temperature_2m <= 22, label: `Temp: ${Math.round(w.current.temperature_2m)}°` },
+    { pos: w.current.relative_humidity_2m < 70, label: `Umidità: ${Math.round(w.current.relative_humidity_2m)}%` },
+    { pos: w.current.precipitation < 0.1, label: w.current.precipitation < 0.1 ? 'Nessuna pioggia' : 'Pioggia in corso' },
+  ]);
+}
+
+function factorHTML(factors) {
+  return factors.map(f => `
+    <div class="factor-row">
+      <div class="factor-dot ${f.pos ? 'pos' : 'neg'}"></div>
+      <span>${f.label}</span>
+    </div>`).join('');
+}
+
+function updateSunsetCountdown(w) {
+  if (!w) return;
+  const now = new Date();
+  const sunset = new Date(w.daily.sunset[0]);
+  const diff = sunset - now;
+  if (diff <= 0) { document.getElementById('sunset-cd').textContent = 'Tramonto passato'; return; }
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  document.getElementById('sunset-cd').textContent = h > 0 ? `tra ${h}h ${m}min` : `tra ${m} minuti`;
+}
+
+// ═══ TIMERS ═══
+function fmtTimer(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function toggleTimer(side) {
+  const t = state.timers[side];
+  if (t.running) {
+    clearInterval(t.interval);
+    t.running = false;
+    document.getElementById('btn-' + side).textContent = 'Resume';
+    document.getElementById('btn-' + side).classList.remove('running');
+  } else {
+    t.running = true;
+    document.getElementById('btn-' + side).textContent = 'Pausa';
+    document.getElementById('btn-' + side).classList.add('running');
+    t.interval = setInterval(() => {
+      if (t.val <= 0) {
+        clearInterval(t.interval);
+        t.running = false;
+        document.getElementById('btn-' + side).textContent = 'Finito!';
+        document.getElementById('btn-' + side).classList.remove('running');
+        return;
+      }
+      t.val--;
+      document.getElementById('timer-' + side).textContent = fmtTimer(t.val);
+    }, 1000);
+  }
+}
+
+function resetTimers() {
+  ['front','back'].forEach(s => {
+    clearInterval(state.timers[s].interval);
+    state.timers[s].running = false;
+    state.timers[s].val = 18 * 60;
+    document.getElementById('timer-' + s).textContent = '18:00';
+    const btn = document.getElementById('btn-' + s);
+    btn.textContent = 'Start';
+    btn.classList.remove('running');
+  });
+}
+
+// ═══ FITNESS ═══
+function toggleMuscle(btn) {
+  const muscle = btn.dataset.muscle;
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+    state.selectedMuscles = state.selectedMuscles.filter(m => m !== muscle);
+  } else {
+    if (state.selectedMuscles.length >= 2) {
+      const first = document.querySelector(`.muscle-btn[data-muscle="${state.selectedMuscles[0]}"]`);
+      if (first) first.classList.remove('selected');
+      state.selectedMuscles.shift();
+    }
+    btn.classList.add('selected');
+    state.selectedMuscles.push(muscle);
+  }
+  document.getElementById('gen-btn').disabled = state.selectedMuscles.length === 0;
+}
+
+function selectTime(btn) {
+  document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.selectedTime = parseInt(btn.dataset.time);
+}
+
+const WORKOUTS = {
+  Petto: {
+    15: [
+      { name: 'Push-up standard', detail: '3 × 12 rep, riposo 45s' },
+      { name: 'Push-up inclinati', detail: '2 × 10 rep, riposo 45s' },
+      { name: 'Push-up larghi', detail: '2 × 10 rep, riposo 45s' },
+    ],
+    30: [
+      { name: 'Push-up standard', detail: '4 × 15 rep, riposo 60s' },
+      { name: 'Push-up a diamante', detail: '3 × 10 rep, riposo 60s' },
+      { name: 'Push-up inclinati', detail: '3 × 12 rep, riposo 60s' },
+      { name: 'Pike push-up', detail: '3 × 10 rep, riposo 60s' },
+      { name: 'Push-up declinati', detail: '3 × 12 rep, riposo 60s' },
+    ],
+    45: [
+      { name: 'Push-up standard', detail: '5 × 15 rep, riposo 60s' },
+      { name: 'Push-up esplosivi', detail: '4 × 8 rep, riposo 90s' },
+      { name: 'Push-up a diamante', detail: '4 × 12 rep, riposo 60s' },
+      { name: 'Push-up inclinati', detail: '4 × 12 rep, riposo 60s' },
+      { name: 'Push-up declinati', detail: '3 × 12 rep, riposo 60s' },
+      { name: 'Archer push-up', detail: '3 × 8 per lato, riposo 90s' },
+    ],
+  },
+  Schiena: {
+    15: [
+      { name: 'Superman hold', detail: '3 × 30s, riposo 30s' },
+      { name: 'Reverse snow angel', detail: '3 × 12 rep, riposo 45s' },
+      { name: 'Good morning a corpo libero', detail: '3 × 15 rep, riposo 45s' },
+    ],
+    30: [
+      { name: 'Superman hold', detail: '4 × 30s, riposo 30s' },
+      { name: 'Trazioni supinate (o Australian pull-up)', detail: '4 × 8 rep, riposo 90s' },
+      { name: 'Reverse snow angel', detail: '3 × 15 rep, riposo 45s' },
+      { name: 'Back extension isometrica', detail: '3 × 45s, riposo 30s' },
+    ],
+    45: [
+      { name: 'Trazioni supinate', detail: '5 × max rep, riposo 90s' },
+      { name: 'Australian pull-up', detail: '4 × 12 rep, riposo 60s' },
+      { name: 'Superman dinamico', detail: '4 × 15 rep, riposo 45s' },
+      { name: 'Reverse snow angel', detail: '4 × 15 rep, riposo 45s' },
+      { name: 'Good morning', detail: '3 × 20 rep, riposo 45s' },
+    ],
+  },
+  Gambe: {
+    15: [
+      { name: 'Squat a corpo libero', detail: '4 × 20 rep, riposo 45s' },
+      { name: 'Affondi alternati', detail: '3 × 12 per lato, riposo 45s' },
+      { name: 'Calf raise', detail: '3 × 25 rep, riposo 30s' },
+    ],
+    30: [
+      { name: 'Squat jump', detail: '4 × 15 rep, riposo 60s' },
+      { name: 'Affondi bulgari', detail: '3 × 12 per lato, riposo 60s' },
+      { name: 'Pistol squat assistito', detail: '3 × 8 per lato, riposo 90s' },
+      { name: 'Glute bridge', detail: '4 × 20 rep, riposo 45s' },
+      { name: 'Calf raise a una gamba', detail: '3 × 15 per lato, riposo 30s' },
+    ],
+    45: [
+      { name: 'Squat jump', detail: '5 × 15 rep, riposo 60s' },
+      { name: 'Pistol squat', detail: '4 × 6 per lato, riposo 90s' },
+      { name: 'Affondi bulgari', detail: '4 × 12 per lato, riposo 60s' },
+      { name: 'Nordic curl (assistito)', detail: '3 × 6 rep, riposo 120s' },
+      { name: 'Glute bridge monopodalico', detail: '4 × 12 per lato, riposo 60s' },
+      { name: 'Calf raise', detail: '4 × 25 rep, riposo 30s' },
+    ],
+  },
+  Spalle: {
+    15: [
+      { name: 'Pike push-up', detail: '3 × 10 rep, riposo 60s' },
+      { name: 'Arm circles', detail: '3 × 30s avanti + 30s indietro' },
+      { name: 'Shoulder tap plank', detail: '3 × 20 tap, riposo 45s' },
+    ],
+    30: [
+      { name: 'Pike push-up', detail: '4 × 12 rep, riposo 60s' },
+      { name: 'Handstand hold (contro muro)', detail: '3 × 20s, riposo 60s' },
+      { name: 'Pike push-up declinato', detail: '3 × 10 rep, riposo 60s' },
+      { name: 'Shoulder tap', detail: '4 × 15 per lato, riposo 45s' },
+    ],
+    45: [
+      { name: 'Handstand push-up (assistito)', detail: '4 × 6 rep, riposo 120s' },
+      { name: 'Pike push-up', detail: '5 × 12 rep, riposo 60s' },
+      { name: 'Decline push-up', detail: '4 × 12 rep, riposo 60s' },
+      { name: 'Lateral raise isometrico', detail: '3 × 30s per lato, riposo 45s' },
+      { name: 'Shoulder tap', detail: '4 × 20 tap, riposo 45s' },
+    ],
+  },
+  Braccia: {
+    15: [
+      { name: 'Chin-up supinato', detail: '3 × max rep, riposo 90s' },
+      { name: 'Push-up a diamante', detail: '3 × 12 rep, riposo 60s' },
+      { name: 'Dip su sedia', detail: '3 × 12 rep, riposo 60s' },
+    ],
+    30: [
+      { name: 'Chin-up supinato', detail: '4 × max rep, riposo 90s' },
+      { name: 'Push-up a diamante', detail: '4 × 15 rep, riposo 60s' },
+      { name: 'Dip su parallele/sedia', detail: '4 × 12 rep, riposo 60s' },
+      { name: 'Curl isometrico a muro', detail: '3 × 30s, riposo 45s' },
+    ],
+    45: [
+      { name: 'Chin-up supinato', detail: '5 × max rep, riposo 90s' },
+      { name: 'Close grip push-up', detail: '4 × 15 rep, riposo 60s' },
+      { name: 'Dip parallele', detail: '4 × 12 rep, riposo 60s' },
+      { name: 'Hammer curl con bottiglia/zaino', detail: '4 × 12 rep, riposo 45s' },
+      { name: 'Curl isometrico', detail: '3 × 45s, riposo 30s' },
+    ],
+  },
+  Core: {
+    15: [
+      { name: 'Plank', detail: '3 × 45s, riposo 30s' },
+      { name: 'Crunch bicicletta', detail: '3 × 20 rep, riposo 45s' },
+      { name: 'Mountain climber', detail: '3 × 30s, riposo 30s' },
+    ],
+    30: [
+      { name: 'Plank', detail: '4 × 60s, riposo 30s' },
+      { name: 'L-sit (su sedie/parallele)', detail: '4 × 15s, riposo 45s' },
+      { name: 'Crunch bicicletta', detail: '3 × 25 rep, riposo 45s' },
+      { name: 'Russian twist', detail: '3 × 20 rep, riposo 45s' },
+      { name: 'Hollow body hold', detail: '3 × 30s, riposo 45s' },
+    ],
+    45: [
+      { name: 'Plank', detail: '4 × 75s, riposo 30s' },
+      { name: 'L-sit', detail: '4 × 20s, riposo 45s' },
+      { name: 'Dragon flag (eccentrico)', detail: '3 × 5 rep, riposo 120s' },
+      { name: 'Crunch bicicletta', detail: '4 × 25 rep, riposo 45s' },
+      { name: 'Hollow body hold', detail: '4 × 40s, riposo 45s' },
+      { name: 'Russian twist', detail: '3 × 25 rep, riposo 45s' },
+    ],
+  },
+};
+
+function generateWorkout() {
+  if (state.selectedMuscles.length === 0) return;
+  const t = state.selectedTime;
+  const exercises = [];
+  state.selectedMuscles.forEach(m => {
+    const ex = WORKOUTS[m]?.[t] || WORKOUTS[m]?.[30] || [];
+    exercises.push(...ex);
+  });
+
+  const out = document.getElementById('workout-output');
+  out.innerHTML = `
+    <div class="workout-card">
+      <div class="workout-header">${state.selectedMuscles.join(' + ')} — ${t} min — ${exercises.length} esercizi</div>
+      ${exercises.map((ex, i) => `
+        <div class="exercise">
+          <span class="ex-num">${i+1}</span>
+          <div>
+            <div class="ex-name">${ex.name}</div>
+            <div class="ex-detail">${ex.detail}</div>
+          </div>
+        </div>`).join('')}
+      <button class="done-btn" onclick="logWorkout()">✓ Workout completato</button>
+    </div>`;
+  state.workoutLogged = false;
+}
+
+// ═══ LOG ═══
+function logTanning() {
+  if (state.tanLogged) return;
+  state.tanLogged = true;
+  addToLog({ type: 'tan' });
+  alert('Sessione tanning salvata!');
+}
+
+function logWorkout() {
+  if (state.workoutLogged) return;
+  state.workoutLogged = true;
+  addToLog({ type: 'workout', muscles: state.selectedMuscles.join('+') });
+  alert('Workout salvato nel log!');
+}
+
+function addToLog(entry) {
+  const today = new Date().toISOString().split('T')[0];
+  let day = state.log.find(d => d.date === today);
+  if (!day) {
+    day = { date: today, oi: state.scores?.oi || 0, tags: [] };
+    state.log.unshift(day);
+    if (state.log.length > 30) state.log.pop();
+  }
+  if (entry.type === 'tan' && !day.tags.includes('tan')) day.tags.push('tan');
+  if (entry.type === 'workout' && !day.tags.some(t => t.startsWith('workout'))) day.tags.push('workout:' + (entry.muscles || ''));
+  localStorage.setItem('sc_log', JSON.stringify(state.log));
+  renderLog();
+}
+
+function renderLog() {
+  const el = document.getElementById('log-entries');
+  if (!state.log.length) { el.innerHTML = '<div style="font-size:13px;color:var(--text3)">Nessun dato ancora.</div>'; return; }
+  el.innerHTML = state.log.slice(0,7).map(d => {
+    const dateStr = new Date(d.date).toLocaleDateString('it-IT', { weekday:'short', month:'short', day:'numeric' });
+    const tags = d.tags.map(t => {
+      if (t === 'tan') return '<span class="log-tag tan">Tan</span>';
+      if (t.startsWith('workout')) return `<span class="log-tag workout">Workout</span>`;
+      if (t === 'outdoor') return '<span class="log-tag outdoor">Outdoor</span>';
+      return '';
+    }).join('');
+    return `<div class="log-day"><span class="log-date">${dateStr}</span><span class="log-oi">${d.oi}</span><div class="log-tags">${tags || '<span style="font-size:12px;color:var(--text3)">—</span>'}</div></div>`;
+  }).join('');
+}
+
+// ═══ MAIN LOAD ═══
+async function loadData() {
+  const city = document.getElementById('city-input').value.trim() || 'Milano';
+  document.getElementById('oi-desc').textContent = 'Caricamento...';
+  document.getElementById('oi-number').textContent = '—';
+  try {
+    const geo = await geocode(city);
+    state.lat = geo.lat; state.lon = geo.lon; state.city = geo.name;
+    const w = await fetchWeather(state.lat, state.lon);
+    state.weather = w;
+    state.scores = calcScores(w);
+    const windows = hourlyWindows(w);
+    renderHome(w, state.scores, windows);
+    renderOutdoor(w, state.scores);
+
+    // Log today's OI
+    const today = new Date().toISOString().split('T')[0];
+    let day = state.log.find(d => d.date === today);
+    if (!day) { day = { date: today, oi: state.scores.oi, tags: [] }; state.log.unshift(day); }
+    else day.oi = state.scores.oi;
+    if (state.log.length > 30) state.log.pop();
+    localStorage.setItem('sc_log', JSON.stringify(state.log));
+    renderLog();
+  } catch(e) {
+    document.getElementById('oi-desc').textContent = 'Errore: ' + e.message;
+  }
+}
+
+document.getElementById('city-input').addEventListener('keydown', e => { if (e.key === 'Enter') loadData(); });
+document.getElementById('refresh-btn').addEventListener('click', loadData);
+setInterval(() => { if (state.weather) updateSunsetCountdown(state.weather); }, 30000);
+
+loadData();
+renderLog();
+</script>
+</body>
+</html>
