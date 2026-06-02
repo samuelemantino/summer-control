@@ -170,7 +170,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
 .sunset-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
 .sunset-countdown{margin-top:10px;font-size:16px;color:var(--accent);font-weight:500}
 
-/* CHILL / RUN */
+/* DRINK / RUN */
 .score-detail{margin:12px 20px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
 .sd-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
 .sd-num{font-size:52px;font-weight:300;color:var(--text);line-height:1.1}
@@ -181,6 +181,22 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
 .factor-dot.pos{background:#1D9E75}
 .factor-dot.neg{background:#D85A30}
 .factor-dot.neu{background:var(--text3)}
+.drink-card{text-align:center}
+.drink-ring{width:136px;height:136px;margin:6px auto 14px;position:relative}
+.drink-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.drink-ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.drink-ring-num{font-size:30px;font-weight:600;color:var(--text);line-height:1}
+.drink-ring-txt{margin-top:4px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.drink-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.drink-stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center}
+.drink-stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.drink-stat-val{font-size:20px;font-weight:600;color:var(--text);font-family: 'Inter';}
+.drink-actions{margin-top:16px;display:grid;grid-template-columns:1fr auto;gap:8px}
+.drink-btn{width:100%;padding:13px;border:1px solid var(--accent);border-radius:var(--radius-sm);background:var(--accent-light);font-family:inherit;font-size:14px;font-weight:600;color:var(--accent);cursor:pointer;transition:.15s}
+.drink-btn:hover{opacity:.9}
+.drink-btn:disabled{opacity:.5;cursor:default}
+.drink-reset-btn{padding:13px 16px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface2);font-family:inherit;font-size:14px;font-weight:600;color:var(--text2);cursor:pointer;transition:.15s}
+.drink-reset-btn:hover{border-color:var(--accent);color:var(--accent)}
 
 @media(min-width:480px){
   body{border-left:1px solid var(--border);border-right:1px solid var(--border)}
@@ -220,9 +236,9 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
   <!-- Special Scores -->
   <div class="scores-grid">
     <div class="score-card">
-      <div class="score-card-label">Chill</div>
-      <div class="score-card-val" id="s-chill">—</div>
-      <div class="score-card-sub" id="s-chill-sub">—</div>
+      <div class="score-card-label">Drink</div>
+      <div class="score-card-val" id="s-drink">—</div>
+      <div class="score-card-sub" id="s-drink-sub">—</div>
     </div>
     <div class="score-card">
       <div class="score-card-label">Tanning</div>
@@ -268,7 +284,7 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
   <div class="sub-selector">
     <button class="sub-btn active" data-sub="tanning">☀️ Tanning</button>
     <button class="sub-btn" data-sub="sunset">🌅 Sunset</button>
-    <button class="sub-btn" data-sub="chill">😎 Chill</button>
+    <button class="sub-btn" data-sub="drink">💧 Drink</button>
   </div>
 
   <!-- TANNING -->
@@ -341,19 +357,38 @@ body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:r
     </div>
   </div>
 
-  <!-- CHILL -->
-  <div class="sub-content" id="sub-chill">
-    <div class="score-detail">
-      <div class="sd-title">Chill Score</div>
-      <div class="sd-num" id="chill-big">—</div>
-      <div class="sd-desc" id="chill-desc">—</div>
-      <div class="factors" id="chill-factors"></div>
-    </div>
-    <div class="score-detail" style="margin-top:12px">
-      <div class="sd-title">Running Score</div>
-      <div class="sd-num" id="run-big">—</div>
-      <div class="sd-desc" id="run-desc">—</div>
-      <div class="factors" id="run-factors"></div>
+  <!-- DRINK -->
+  <div class="sub-content" id="sub-drink">
+    <div class="score-detail drink-card">
+      <div class="sd-title">Drink</div>
+      <div class="drink-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="50" cy="50" r="42" fill="none" id="drink-arc"
+            stroke="#1D9E75" stroke-width="8"
+            stroke-dasharray="0 264" stroke-linecap="round"
+            style="transition:stroke-dasharray .45s ease,stroke .2s"/>
+        </svg>
+        <div class="drink-ring-label">
+          <div class="drink-ring-num" id="drink-progress">0/8</div>
+          <div class="drink-ring-txt">bicchieri</div>
+        </div>
+      </div>
+      <div class="sd-desc" id="drink-desc">Caricamento...</div>
+      <div class="drink-meta">
+        <div class="drink-stat">
+          <div class="drink-stat-label">Target</div>
+          <div class="drink-stat-val" id="drink-target">—</div>
+        </div>
+        <div class="drink-stat">
+          <div class="drink-stat-label">Temp</div>
+          <div class="drink-stat-val" id="drink-temp">—</div>
+        </div>
+      </div>
+      <div class="drink-actions">
+        <button class="drink-btn" id="drink-add-btn" onclick="addGlass()">+1 bicchiere</button>
+        <button class="drink-reset-btn" onclick="resetDrink()">Reset</button>
+      </div>
     </div>
   </div>
 </div>
@@ -433,6 +468,7 @@ const state = {
   selectedMuscles: [],
   selectedTime: 45,
   timers: { front: { val: 0, running: false, interval: null }, back: { val: 0, running: false, interval: null } },
+  drink: JSON.parse(localStorage.getItem('sc_drink') || '{"date":"","glasses":0,"target":8}'),
   log: JSON.parse(localStorage.getItem('sc_log') || '[]'),
   tanLogged: false,
   workoutLogged: false,
@@ -486,6 +522,85 @@ function fmtTime(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+}
+
+function calcHydrationTarget(temp) {
+  if (temp >= 34) return 12;
+  if (temp >= 30) return 11;
+  if (temp >= 26) return 10;
+  if (temp >= 20) return 8;
+  if (temp >= 12) return 7;
+  return 6;
+}
+
+function syncDrinkDay(target) {
+  const today = new Date().toISOString().split('T')[0];
+  if (state.drink.date !== today || state.drink.target !== target) {
+    state.drink = {
+      date: today,
+      glasses: state.drink.date === today ? Math.min(state.drink.glasses, target) : 0,
+      target
+    };
+    saveDrink();
+  }
+}
+
+function saveDrink() {
+  localStorage.setItem('sc_drink', JSON.stringify(state.drink));
+}
+
+function drinkSubtitle(s) {
+  return s >= 100 ? 'Obiettivo fatto' : s >= 50 ? 'A meta strada' : 'Bevi di piu';
+}
+
+function updateDrinkScoreCard(target) {
+  if (!target) return;
+  const score = Math.min(100, Math.round((state.drink.glasses / target) * 100));
+  if (state.scores) state.scores.drink = score;
+  document.getElementById('s-drink').textContent = score;
+  document.getElementById('s-drink-sub').textContent = drinkSubtitle(score);
+}
+
+function addGlass() {
+  if (!state.drink.target) return;
+  state.drink.glasses = Math.min(state.drink.target, state.drink.glasses + 1);
+  saveDrink();
+  renderDrink(state.weather);
+}
+
+function resetDrink() {
+  state.drink.glasses = 0;
+  saveDrink();
+  renderDrink(state.weather);
+}
+
+function renderDrink(w) {
+  if (!w) return;
+  const temp = Math.round(w.current.temperature_2m);
+  const target = calcHydrationTarget(w.current.temperature_2m);
+  syncDrinkDay(target);
+  const done = Math.min(state.drink.glasses, target);
+  const pct = Math.min(done / target, 1);
+  const circ = 2 * Math.PI * 42;
+  const arc = document.getElementById('drink-arc');
+  if (arc) {
+    arc.setAttribute('stroke-dasharray', (circ * pct) + ' ' + (circ * (1 - pct)));
+    arc.setAttribute('stroke', pct >= 1 ? '#1D9E75' : scoreColor(Math.round(pct * 100)));
+  }
+  document.getElementById('drink-progress').textContent = done + '/' + target;
+  document.getElementById('drink-target').textContent = target;
+  document.getElementById('drink-temp').textContent = temp + '°';
+  document.getElementById('drink-desc').textContent = pct >= 1
+    ? 'Obiettivo raggiunto per oggi.'
+    : temp >= 30
+      ? 'Fa caldo: tieni l\'acqua vicina e sali un bicchiere alla volta.'
+      : temp <= 12
+        ? 'Fa fresco, ma idratarsi conta comunque.'
+        : 'Obiettivo giornaliero bilanciato sulla temperatura di oggi.';
+  updateDrinkScoreCard(target);
+  const btn = document.getElementById('drink-add-btn');
+  btn.disabled = pct >= 1;
+  btn.textContent = pct >= 1 ? 'Obiettivo completato' : '+1 bicchiere';
 }
 
 // ═══ OUTDOOR INDEX FORMULA ═══
@@ -568,17 +683,11 @@ function calcScores(w) {
   if (uv > 8) train -= 10;
   train = Math.min(100, Math.max(0, Math.round(train)));
 
-  // Running Score
-  let run = 50;
-  if (temp >= 8 && temp <= 20) run += 30;
-  else if (temp >= 20 && temp <= 25) run += 15;
-  else if (temp > 28) run -= 25;
-  if (humidity < 60) run += 10;
-  if (wind < 15) run += 10;
-  if (rain > 0) run -= 20;
-  run = Math.min(100, Math.max(0, Math.round(run)));
+  const drinkTarget = calcHydrationTarget(temp);
+  syncDrinkDay(drinkTarget);
+  const drink = Math.min(100, Math.round((state.drink.glasses / drinkTarget) * 100));
 
-  return { oi, chill, tan, sunsetScore, train, run };
+  return { oi, chill, tan, sunsetScore, train, drink };
 }
 
 function hourlyWindows(w) {
@@ -641,13 +750,13 @@ function renderHome(w, scores, windows) {
 
   // Special scores
   const scoreConf = [
-    ['s-chill', scores.chill, 'chill-sub'],
+    ['s-drink', scores.drink, 'drink-sub'],
     ['s-tan', scores.tan, 'tan-sub'],
     ['s-sunset', scores.sunsetScore, 'sunset-sub'],
     ['s-train', scores.train, 'train-sub'],
   ];
   const sublabels = [
-    s => s >= 70 ? 'Fresco e piacevole' : s >= 50 ? 'Accettabile' : 'Non ideale',
+    drinkSubtitle,
     s => s >= 70 ? 'UV ottimale' : s >= 40 ? 'Abbronzatura lenta' : 'UV troppo basso/alto',
     s => s >= 70 ? 'Tramonto epico' : s >= 50 ? 'Da vedere' : 'Normale',
     s => s >= 70 ? 'Condizioni top' : s >= 50 ? 'Va bene' : 'Considera palestra',
@@ -657,7 +766,7 @@ function renderHome(w, scores, windows) {
     document.getElementById('s-' + subid.split('-')[1] + '-sub') && 
       (document.getElementById('s-' + subid.split('-')[1] + '-sub').textContent = sublabels[i](val));
   });
-  document.getElementById('s-chill-sub').textContent = sublabels[0](scores.chill);
+  document.getElementById('s-drink-sub').textContent = sublabels[0](scores.drink);
   document.getElementById('s-tan-sub').textContent = sublabels[1](scores.tan);
   document.getElementById('s-sunset-sub').textContent = sublabels[2](scores.sunsetScore);
   document.getElementById('s-train-sub').textContent = sublabels[3](scores.train);
@@ -709,21 +818,15 @@ function renderOutdoor(w, scores) {
     { pos: w.current.relative_humidity_2m < 70, label: w.current.relative_humidity_2m < 70 ? 'Umidità ok' : 'Umidità alta: cielo meno nitido' },
   ]);
 
-  // Chill
-  document.getElementById('chill-big').textContent = scores.chill;
-  document.getElementById('chill-desc').textContent = scores.chill >= 70 ? 'Temperatura piacevole, brezza leggera. Perfetto per stare all\'aperto.' : scores.chill >= 50 ? 'Condizioni accettabili, niente di eccezionale.' : 'Troppo caldo/umido/ventoso per stare in giro comodamente.';
-  document.getElementById('chill-factors').innerHTML = factorHTML([
+  // Drink
+  renderDrink(w);
+  const oldChillDesc = document.getElementById('chill-desc');
+  const oldChillFactors = document.getElementById('chill-factors');
+  if (oldChillDesc) oldChillDesc.textContent = scores.chill >= 70 ? 'Temperatura piacevole, brezza leggera. Perfetto per stare all\'aperto.' : scores.chill >= 50 ? 'Condizioni accettabili, niente di eccezionale.' : 'Troppo caldo/umido/ventoso per stare in giro comodamente.';
+  if (oldChillFactors) oldChillFactors.innerHTML = factorHTML([
     { pos: w.current.temperature_2m >= 18 && w.current.temperature_2m <= 26, label: `Temperatura: ${Math.round(w.current.temperature_2m)}°` },
     { pos: w.current.relative_humidity_2m < 65, label: `Umidità: ${Math.round(w.current.relative_humidity_2m)}%` },
     { pos: w.current.windspeed_10m < 20, label: `Vento: ${Math.round(w.current.windspeed_10m)} km/h` },
-  ]);
-
-  document.getElementById('run-big').textContent = scores.run;
-  document.getElementById('run-desc').textContent = scores.run >= 70 ? 'Condizioni ideali per correre. Temperatura e umidità nella norma.' : scores.run >= 50 ? 'Uscita possibile, ma non ottimale.' : 'Meglio rimandare o correre in palestra.';
-  document.getElementById('run-factors').innerHTML = factorHTML([
-    { pos: w.current.temperature_2m >= 8 && w.current.temperature_2m <= 22, label: `Temp: ${Math.round(w.current.temperature_2m)}°` },
-    { pos: w.current.relative_humidity_2m < 70, label: `Umidità: ${Math.round(w.current.relative_humidity_2m)}%` },
-    { pos: w.current.precipitation < 0.1, label: w.current.precipitation < 0.1 ? 'Nessuna pioggia' : 'Pioggia in corso' },
   ]);
 }
 
