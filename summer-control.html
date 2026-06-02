@@ -467,7 +467,10 @@ const state = {
   lat: 45.4642, lon: 9.1900,
   selectedMuscles: [],
   selectedTime: 45,
-  timers: { front: { val: 0, running: false, interval: null }, back: { val: 0, running: false, interval: null } },
+  timers: {
+    front: { val: 18 * 60, duration: 18 * 60, running: false, interval: null },
+    back: { val: 18 * 60, duration: 18 * 60, running: false, interval: null }
+  },
   drink: JSON.parse(localStorage.getItem('sc_drink') || '{"date":"","glasses":0,"target":8}'),
   log: JSON.parse(localStorage.getItem('sc_log') || '[]'),
   tanLogged: false,
@@ -800,7 +803,9 @@ function renderOutdoor(w, scores) {
   document.getElementById('timer-front').textContent = mins + ':00';
   document.getElementById('timer-back').textContent = mins + ':00';
   state.timers.front.val = mins * 60;
+  state.timers.front.duration = mins * 60;
   state.timers.back.val = mins * 60;
+  state.timers.back.duration = mins * 60;
 
   const spf = uv <= 3 ? '15-20' : uv <= 6 ? '30' : uv <= 8 ? '50' : '50+';
   document.getElementById('prot-text').textContent = `SPF ${spf} consigliato. UV ${uv <= 3 ? 'basso' : uv <= 6 ? 'moderato' : uv <= 8 ? 'alto' : 'molto alto'} — ${uv <= 3 ? 'protezione leggera, ok anche crema idratante con filtro' : uv <= 6 ? 'applica protezione 30 min prima, riapplica ogni 2h' : 'protezione alta obbligatoria, evita ore 11-15, cappello consigliato'}.`;
@@ -885,8 +890,8 @@ function resetTimers() {
   ['front','back'].forEach(s => {
     clearInterval(state.timers[s].interval);
     state.timers[s].running = false;
-    state.timers[s].val = 18 * 60;
-    document.getElementById('timer-' + s).textContent = '18:00';
+    state.timers[s].val = state.timers[s].duration;
+    document.getElementById('timer-' + s).textContent = fmtTimer(state.timers[s].val);
     const btn = document.getElementById('btn-' + s);
     btn.textContent = 'Start';
     btn.classList.remove('running');
