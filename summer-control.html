@@ -468,8 +468,8 @@ const state = {
   selectedMuscles: [],
   selectedTime: 45,
   timers: {
-    front: { val: 18 * 60, duration: 18 * 60, running: false, interval: null },
-    back: { val: 18 * 60, duration: 18 * 60, running: false, interval: null }
+    front: { val: 18 * 60, duration: 18 * 60, running: false, interval: null, endAt: null },
+    back: { val: 18 * 60, duration: 18 * 60, running: false, interval: null, endAt: null }
   },
   drink: JSON.parse(localStorage.getItem('sc_drink') || '{"date":"","glasses":0,"target":8}'),
   log: JSON.parse(localStorage.getItem('sc_log') || '[]'),
@@ -800,12 +800,14 @@ function renderOutdoor(w, scores) {
   const mins = uv <= 2 ? 60 : uv <= 4 ? 40 : uv <= 6 ? 25 : uv <= 8 ? 18 : 10;
   const tanText = uv <= 1 ? 'UV molto basso, abbronzatura minima' : uv <= 3 ? 'UV basso, puoi stare fuori più a lungo' : uv <= 6 ? `UV moderato — circa ${mins} min per lato` : uv <= 8 ? `UV alto — max ${mins} min per lato` : `UV molto alto — max ${mins} min, protezione obbligatoria`;
   document.getElementById('tan-rec').textContent = tanText;
-  document.getElementById('timer-front').textContent = mins + ':00';
-  document.getElementById('timer-back').textContent = mins + ':00';
-  state.timers.front.val = mins * 60;
-  state.timers.front.duration = mins * 60;
-  state.timers.back.val = mins * 60;
-  state.timers.back.duration = mins * 60;
+  ['front','back'].forEach(side => {
+    const timer = state.timers[side];
+    timer.duration = mins * 60;
+    if (!timer.running) {
+      timer.val = timer.duration;
+      document.getElementById('timer-' + side).textContent = fmtTimer(timer.val);
+    }
+  });
 
   const spf = uv <= 3 ? '15-20' : uv <= 6 ? '30' : uv <= 8 ? '50' : '50+';
   document.getElementById('prot-text').textContent = `SPF ${spf} consigliato. UV ${uv <= 3 ? 'basso' : uv <= 6 ? 'moderato' : uv <= 8 ? 'alto' : 'molto alto'} — ${uv <= 3 ? 'protezione leggera, ok anche crema idratante con filtro' : uv <= 6 ? 'applica protezione 30 min prima, riapplica ogni 2h' : 'protezione alta obbligatoria, evita ore 11-15, cappello consigliato'}.`;
@@ -866,23 +868,30 @@ function toggleTimer(side) {
   if (t.running) {
     clearInterval(t.interval);
     t.running = false;
+    t.endAt = null;
     document.getElementById('btn-' + side).textContent = 'Resume';
     document.getElementById('btn-' + side).classList.remove('running');
   } else {
     t.running = true;
+    t.endAt = Date.now() + (t.val * 1000);
     document.getElementById('btn-' + side).textContent = 'Pausa';
     document.getElementById('btn-' + side).classList.add('running');
-    t.interval = setInterval(() => {
-      if (t.val <= 0) {
-        clearInterval(t.interval);
-        t.running = false;
-        document.getElementById('btn-' + side).textContent = 'Finito!';
-        document.getElementById('btn-' + side).classList.remove('running');
-        return;
-      }
-      t.val--;
-      document.getElementById('timer-' + side).textContent = fmtTimer(t.val);
-    }, 1000);
+    updateTimer(side);
+    t.interval = setInterval(() => updateTimer(side), 1000);
+  }
+}
+
+function updateTimer(side) {
+  const t = state.timers[side];
+  if (!t.running || !t.endAt) return;
+  t.val = Math.max(0, Math.ceil((t.endAt - Date.now()) / 1000));
+  document.getElementById('timer-' + side).textContent = fmtTimer(t.val);
+  if (t.val <= 0) {
+    clearInterval(t.interval);
+    t.running = false;
+    t.endAt = null;
+    document.getElementById('btn-' + side).textContent = 'Finito!';
+    document.getElementById('btn-' + side).classList.remove('running');
   }
 }
 
@@ -890,6 +899,7 @@ function resetTimers() {
   ['front','back'].forEach(s => {
     clearInterval(state.timers[s].interval);
     state.timers[s].running = false;
+    state.timers[s].endAt = null;
     state.timers[s].val = state.timers[s].duration;
     document.getElementById('timer-' + s).textContent = fmtTimer(state.timers[s].val);
     const btn = document.getElementById('btn-' + s);
@@ -897,6 +907,10 @@ function resetTimers() {
     btn.classList.remove('running');
   });
 }
+
+document.addEventListener('visibilitychange', () => {
+  ['front','back'].forEach(updateTimer);
+});
 
 // ═══ FITNESS ═══
 function toggleMuscle(btn) {
